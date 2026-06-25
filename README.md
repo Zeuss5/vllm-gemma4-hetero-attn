@@ -6,7 +6,7 @@ heterogeneous head dimensions"** without forking or editing vLLM.
 
 ## Benchmarks
 
-`vllm bench serve`, `google/gemma-4-31B-it`, **4× B200** (TP=2), vLLM 0.23.0,
+`vllm bench serve`, `google/gemma-4-31B-it`, **2× B200** (TP=2), vLLM 0.23.0,
 `--dataset-name random --num-prompts 200 --ignore-eos --request-rate inf`
 (max load), **no MTP**. "Stock" = unmodified vLLM (forces `TRITON_ATTN` on all
 layers); "Plugin" = this package with `VLLM_GEMMA4_TEXT_ONLY_ATTN=1` (head=256
