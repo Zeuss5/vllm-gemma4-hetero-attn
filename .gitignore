@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+*.egg
+
+# Virtualenvs
+.venv/
+venv/
+env/
+
+# Local run artifacts (machine-specific; summarized in RESULTS.md)
+logs/
+results/
+*.log
+vllm_pkg_path.txt
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store

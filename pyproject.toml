@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vllm-gemma4-hetero-attn"
+version = "0.1.0"
+description = "vLLM plugin: per-layer attention backend selection for Gemma 4 models with heterogeneous head dimensions (drag-and-drop implementation of vLLM PR #38891)."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "Apache-2.0" }
+authors = [{ name = "selimaktas", email = "selimaktas@gmail.com" }]
+keywords = ["vllm", "gemma", "gemma4", "attention", "flash-attention", "flashinfer", "plugin", "speculative-decoding"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = []
+
+# Note: vLLM is intentionally NOT a dependency. This package is loaded *inside*
+# a running vLLM process via the entry point below; pinning vLLM here would risk
+# reinstalling/forking the user's existing vLLM. Requires vLLM >= 0.23 at runtime.
+
+[project.urls]
+Homepage = "https://github.com/Zeuss5/vllm-gemma4-hetero-attn"
+Repository = "https://github.com/Zeuss5/vllm-gemma4-hetero-attn"
+Issues = "https://github.com/Zeuss5/vllm-gemma4-hetero-attn/issues"
+"vLLM PR #38891" = "https://github.com/vllm-project/vllm/pull/38891"
+
+[project.optional-dependencies]
+bench = ["datasets"]
+
+# This is the whole mechanism: vLLM calls every function registered under the
+# "vllm.general_plugins" entry-point group via load_general_plugins(), which
+# runs inside EngineArgs.__post_init__ (and again in the engine-core / worker
+# processes) BEFORE VllmConfig.__post_init__ -> try_verify_and_update_config().
+# So patching Gemma4Config here lands before the config is verified.
+[project.entry-points."vllm.general_plugins"]
+gemma4_hetero_attn = "vllm_gemma4_hetero_attn:register"
+
+[tool.setuptools.packages.find]
+where = ["src"]
