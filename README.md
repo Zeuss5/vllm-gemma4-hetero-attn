@@ -4,6 +4,37 @@ Drag-and-drop [vLLM](https://github.com/vllm-project/vllm) plugin that backports
 **PR #38891 — "[Gemma4] Allow per-layer attention backend selection for
 heterogeneous head dimensions"** without forking or editing vLLM.
 
+## Benchmarks
+
+`vllm bench serve`, `google/gemma-4-31B-it`, **4× B200** (TP=2), vLLM 0.23.0,
+`--dataset-name random --num-prompts 200 --ignore-eos --request-rate inf`
+(max load), **no MTP**. "Stock" = unmodified vLLM (forces `TRITON_ATTN` on all
+layers); "Plugin" = this package with `VLLM_GEMMA4_TEXT_ONLY_ATTN=1` (head=256
+layers → FlashInfer, head=512 → Triton).
+
+**1000 input / 1000 output tokens**
+
+| Metric | Stock (Triton) | Plugin | Improvement |
+|---|---:|---:|---:|
+| Output throughput (tok/s) | 3955 | **5599** | **1.42×** |
+| Total throughput (tok/s)  | 7911 | **11199** | **1.42×** |
+| Mean TTFT (ms)            | 4230 | **3527** | 17% lower |
+| Mean TPOT (ms)            | 46.1 | **32.0** | 31% lower |
+| Benchmark duration (s)    | 50.6 | **35.7** | 1.42× faster |
+
+**2500 input / 250 output tokens** (prefill-heavy)
+
+| Metric | Stock (Triton) | Plugin | Improvement |
+|---|---:|---:|---:|
+| Output throughput (tok/s) | 1509 | **2037** | **1.35×** |
+| Total throughput (tok/s)  | 16604 | **22410** | **1.35×** |
+| Mean TTFT (ms)            | 11644 | **8800** | 24% lower |
+| Mean TPOT (ms)            | 83.4 | **61.0** | 27% lower |
+| Benchmark duration (s)    | 33.1 | **24.5** | 1.35× faster |
+
+~1.35–1.42× higher throughput and lower latency under load, with **GSM8K parity**
+(81.65% vs 81.43%, see `RESULTS.md`). Raw `vllm bench serve` JSON is in `results/`.
+
 ## The problem
 
 Gemma 4 uses **heterogeneous head dimensions**: sliding-window layers use
